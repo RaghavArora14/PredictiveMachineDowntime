@@ -239,4 +239,3 @@ The application supports three machine learning models, each chosen for its suit
 
 ## License
 This project is licensed under the Apache License 2.0.
-
