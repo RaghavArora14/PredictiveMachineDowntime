@@ -26,140 +26,177 @@ This project was developed to meet the following goals:
 - **Machine Learning Library**: scikit-learn
 - **Data Handling**: pandas
 
-## API Endpoints
-The application exposes the following endpoints:
 
-### 1. `/upload` (POST)
-Uploads a CSV file containing manufacturing data and selects the target variable for prediction.
-- **Input**:
-  - Form-data with:
-    - `file`: The CSV file containing data.
-    - `target`: The target column to predict (e.g., `Downtime_Flag`).
-- **Output**:
-  ```json
-  {
-    "message": "Dataset uploaded successfully",
-    "features": ["Feature1", "Feature2", ...],
-    "target": "Target"
-  }
-  ```
+## Setup Instructions
 
-### 2. `/train` (POST)
-Trains the machine learning model on the uploaded dataset.
-- **Input**:
-  ```json
-  {
-    "model_type": "lr" // Options: "lr" (Logistic Regression), "dt" (Decision Tree), "svm" (Support Vector Machine)
-  }
-  ```
-- **Output**:
-  ```json
-  {
-    "message": "Model trained successfully",
-    "metrics": {
-      "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0
-    }
-  }
-  ```
+Follow these steps to set up and run the **Manufacturing Downtime Predictor** on your local machine.
 
-### 3. `/predict` (POST)
-Accepts feature inputs and returns a prediction along with confidence.
-- **Input**:
-  ```json
-  {
-    "features": {
-      "Temperature": 85.0,
-      "Run_Time": 350,
-      "Torque": 45.5,
-      "Tool_Wear": 150
-    }
-  }
-  ```
-- **Output**:
-  ```json
-  {
-    "prediction": "Yes",
-    "confidence": 0.89
-  }
-  ```
+### 1. Prerequisites
+Before setting up the application, ensure that you have the following installed on your system:
 
-### 4. `/generate-data` (POST)
-Generates synthetic manufacturing data for testing.
-- **Output**: CSV file for download.
+- **Python 3.x**: The application is developed using Python.
+- **Pip**: Python package manager to install the dependencies.
+- **Git** (optional): For cloning the repository.
 
-### Example Requests and Outputs
-#### Upload Data
+### 2. Clone the Repository
+If you haven’t already, clone the repository containing the project files.
+
 ```bash
-curl -X POST -F "file=@data.csv" -F "target=Downtime_Flag" http://127.0.0.1:5000/upload
-```
-**Expected Output:**
-```json
-{
-  "message": "Dataset uploaded successfully",
-  "features": ["Temperature", "Run_Time", "Torque", "Tool_Wear"],
-  "target": "Downtime_Flag"
-}
+git clone https://github.com/your-username/manufacturing-downtime-predictor.git
+cd manufacturing-downtime-predictor
 ```
 
-#### Train Model
+### 3. Install Dependencies
+Navigate to the project directory and install the required Python libraries using `pip`. The required dependencies are listed in the `requirements.txt` file.
+
+Run the following command to install them:
+
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"model_type": "dt"}' http://127.0.0.1:5000/train
-```
-**Expected Output:**
-```json
-{
-  "message": "Model trained successfully",
-  "metrics": {
-    "accuracy": 1.0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "f1_score": 1.0
-  }
-}
+pip install -r requirements.txt
 ```
 
-#### Make Prediction
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{"features": {"Temperature": 95.0, "Run_Time": 450, "Torque": 65.5, "Tool_Wear": 180}}' http://127.0.0.1:5000/predict
-```
-**Expected Output:**
-```json
-{
-  "prediction": "Yes",
-  "confidence": 0.93
-}
-```
+This will install the following dependencies:
+- `Flask`: Web framework for creating the application.
+- `scikit-learn`: Machine learning library for training models.
+- `pandas`: For data manipulation.
+- `numpy`: For numerical operations.
 
-#### Download Synthetic Data
+### 4. Set Up the Flask Application
+To run the application, you'll need to execute the following command.
+
+  ```bash
+    python app.py
+  ```
+This will start the server on `http://127.0.0.1:5000/`.
+
+### 5. Access the Web Application
+Once the server is running, open your browser and navigate to `http://127.0.0.1:5000/` to access the application’s user interface.
+
+- You can upload your own data or use the generated synthetic dataset.
+- Choose a machine learning model (Logistic Regression, Decision Tree, or SVM) and train the model.
+- After training, make predictions based on new feature inputs.
+
+### 6. Testing API Endpoints (Optional)
+If you'd like to test the API endpoints directly (without the front-end interface), you can use tools like `curl` or Postman to make HTTP requests to the Flask server.
+
+- **Upload Data**:
+  ```bash
+  curl -X POST -F "file=@data.csv" -F "target=Downtime_Flag" http://127.0.0.1:5000/upload
+  ```
+
+- **Train Model**:
+  ```bash
+  curl -X POST -H "Content-Type: application/json" -d '{"model_type": "dt"}' http://127.0.0.1:5000/train
+  ```
+
+- **Make Prediction**:
+  ```bash
+  curl -X POST -H "Content-Type: application/json" -d '{"features": {"Temperature": 85.0, "Run_Time": 350, "Torque": 45.5, "Tool_Wear": 150}}' http://127.0.0.1:5000/predict
+  ```
+
+### 7. Download Synthetic Data
+To download the synthetic dataset generated by the application, use the `Generate Data` feature or use the following curl command:
+
 ```bash
 curl -X POST http://127.0.0.1:5000/generate-data --output synthetic_data.csv
 ```
-**Expected Output:**
-A CSV file named `synthetic_data.csv` will be downloaded containing simulated manufacturing data.
 
-## Explanation of API and RESTful Principles
-### What is a RESTful API?
-REST (Representational State Transfer) is a software architectural style for creating scalable web services. A RESTful API uses HTTP requests to perform CRUD (Create, Read, Update, Delete) operations on data.
+This will download the CSV file with the generated synthetic data.
 
-Key principles of REST include:
-1. **Statelessness**: Each request from a client must contain all necessary information for the server to process it.
-2. **Resource Identification**: Resources are identified using URLs (e.g., `/upload`, `/train`).
-3. **Standard Methods**: REST uses standard HTTP methods like GET, POST, PUT, and DELETE.
-4. **Representation**: Data can be sent in formats like JSON, XML, or HTML.
+---
 
-### How This Application Uses Flask for RESTful APIs
-Flask is a lightweight web framework in Python that simplifies the creation of RESTful APIs. In this application:
-1. **Endpoints**: Flask routes (e.g., `@app.route('/upload', methods=['POST'])`) define specific API operations.
-2. **Request Handling**: The `request` object is used to handle input data (e.g., JSON, form-data).
-3. **Responses**: The `jsonify` function is used to return structured JSON responses to clients.
+## Files in the Project
 
-For example, the `/train` endpoint:
-- Accepts JSON input specifying the model type.
-- Processes the data and trains the model using scikit-learn.
-- Returns performance metrics as a JSON response.
+### 1. `app.py`
+This is the main Flask application that handles the server-side logic of the project. It serves the front-end, manages data uploads, model training, and prediction, and interacts with the machine learning models through API endpoints.
+
+- **Key functionality**:
+  - Routes and serves the web application using Flask.
+  - Handles file uploads and dataset parsing.
+  - Trains machine learning models using the uploaded dataset (`Logistic Regression`, `Decision Tree`, or `SVM`).
+  - Makes predictions based on user input and the trained model.
+  - Exposes RESTful APIs for uploading data, training models, generating predictions, and downloading synthetic data.
+
+### 2. `model.py`
+This file contains the `ModelTrainer` class, which is responsible for training the machine learning models and making predictions. It uses the `scikit-learn` library to build, train, and evaluate models like Logistic Regression, Decision Tree, and Support Vector Machine.
+
+- **Key functionality**:
+  - Handles the training of the machine learning models.
+  - Prepares data for model training by splitting it into training and testing sets.
+  - Trains models and evaluates them using metrics like accuracy, precision, recall, and F1-score.
+  - Makes predictions based on input features.
+
+### 3. `index.html`
+This is the main front-end HTML file that provides the structure of the web interface. It allows users to upload datasets, train models, and make predictions. The file also includes buttons for navigating between different sections (uploading data, training models, and making predictions).
+
+- **Key functionality**:
+  - Defines the layout and structure of the web interface.
+  - Includes forms for uploading data, selecting a machine learning model, and inputting feature values for predictions.
+  - Dynamically generates the input fields for making predictions based on the dataset's features.
+
+### 4. `script.js`
+This file contains the JavaScript code that manages the dynamic interactions between the front-end and the Flask back-end. It updates the user interface in real-time based on user input and server responses, ensuring a smooth and responsive user experience.
+
+- **Key functionality**:
+  - Handles user interactions, including uploading data, selecting model types, and submitting prediction requests.
+  - Dynamically generates input fields for making predictions based on the features of the uploaded dataset.
+  - Sends asynchronous HTTP requests (using the `fetch` API) to the Flask back-end for uploading data, training machine learning models, and fetching predictions.
+  - Updates the UI with success or error messages after processing data on the server.
+  - Manages tab navigation and dynamically displays different sections of the user interface based on user selection.
+
+### 5. `style.css`
+This file contains the CSS styles for the web interface. It defines the visual appearance of the web application, including layouts, buttons, and form styles. It ensures that the application is user-friendly and visually appealing.
+
+- **Key functionality**:
+  - Styles the web page for a clean and professional look.
+  - Defines the layout for different sections of the application (e.g., Upload, Train Model, Predict).
+  - Provides styles for buttons, forms, and messages displayed on the web interface.
+
+### 6. `data_gen.py`
+This script is responsible for generating synthetic operational data for machines. It simulates various features such as temperature, run time, torque, and tool wear, and then assigns a downtime flag (`Downtime_Flag`) based on predefined conditions. The generated dataset is saved as a CSV file.
+
+- **Key functionality**:
+  - Generates machine data with features: `Machine_ID`, `Temperature`, `Run_Time`, `Torque`, and `Tool_Wear`.
+  - Assigns the `Downtime_Flag` based on specific conditions (e.g., high temperature, long run time, high torque).
+  - Saves the generated data to a CSV file (`machine_data.csv`).
+
+### Synthetic Dataset
+This CSV file contains the synthetic dataset generated by `data_gen.py`. It includes the following columns:
+  - **Machine_ID**: Unique identifier for each machine.
+  - **Temperature**: The operating temperature of the machine (°C).
+  - **Run_Time**: Total run time of the machine (minutes).
+  - **Torque**: The applied torque to the machine (Newton-meters).
+  - **Tool_Wear**: The wear level of the machine's tool.
+  - **Downtime_Flag**: A binary flag indicating if the machine is likely to experience downtime (`1` for downtime, `0` for no downtime).
+
+---
+
+## API Endpoints
+
+### 1. `/upload` (POST)
+- **Description**: Uploads a CSV file with manufacturing data and selects the target variable for prediction.
+- **Input**: 
+  - `file`: CSV file.
+  - `target`: Target column (e.g., `Downtime_Flag`).
+- **Output**: JSON with success message, feature names, and target variable.
+
+### 2. `/train` (POST)
+- **Description**: Trains the machine learning model using the uploaded dataset.
+- **Input**: 
+  - `model_type`: Model choice (`"lr"`, `"dt"`, `"svm"`).
+- **Output**: JSON with success message and model performance metrics (accuracy, precision, recall, F1-score).
+
+### 3. `/predict` (POST)
+- **Description**: Accepts feature inputs and returns a downtime prediction along with confidence.
+- **Input**: JSON with feature values (e.g., `Temperature`, `Run_Time`, `Torque`, `Tool_Wear`).
+- **Output**: JSON with prediction (`"Yes"`/`"No"`) and confidence score.
+
+### 4. `/generate-data` (POST)
+- **Description**: Generates synthetic manufacturing data for testing.
+- **Output**: CSV file for download.
+
+--- 
+
 
 ## Usage Workflow
 1. **Upload Data**: Navigate to the Upload tab, upload a dataset, and specify the target variable.
@@ -181,7 +218,7 @@ This dynamic functionality ensures a seamless user experience and reduces the po
 ![image](https://github.com/user-attachments/assets/73edbf1f-c4c0-48a5-a5f3-a379afdfbb36)
 ![image](https://github.com/user-attachments/assets/f9eb0d09-b618-408f-b018-a15d65305663)
 
-## Explanation of Model Choices
+## Available Models
 The application supports three machine learning models, each chosen for its suitability to manufacturing data:
 
 ### Logistic Regression (LR)
@@ -196,9 +233,7 @@ The application supports three machine learning models, each chosen for its suit
 - **Rationale**: SVM is suited for high-dimensional and complex decision boundaries. By using a non-linear kernel, it effectively separates challenging datasets.
 - **Performance**: Achieved 97.75% accuracy, with precision of 92.31%, recall of 60.00%, and F1-score of 72.73% on the synthetic dataset.
 
-### Train-Test Split
-The data is split into 80% for training and 20% for testing to evaluate model performance effectively. This ensures a reliable estimate of how the model will perform on unseen data.
-
+##
 ## Contributors
 - [Raghav Arora](https://github.com/RaghavArora14)
 
