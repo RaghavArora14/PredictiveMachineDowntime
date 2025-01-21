@@ -1,8 +1,8 @@
-import pandas as pd
+from pandas import DataFrame, read_csv
 import numpy as np
 
 def generate_synthetic_data(num_samples=2000):
-    np.random.seed(42)  # For reproducibility
+    np.random.seed(42)
     
     data = {
         "Machine_ID": np.arange(1, num_samples + 1),
@@ -12,7 +12,6 @@ def generate_synthetic_data(num_samples=2000):
         "Tool_Wear": np.random.uniform(0, 200, num_samples).round(0),
     }
     
-    # Add Downtime_Flag based on conditions
     data["Downtime_Flag"] = [
         1 if (temp > 90 and runtime > 400) or torque > 60 else 0
         for temp, runtime, torque in zip(
@@ -20,4 +19,4 @@ def generate_synthetic_data(num_samples=2000):
         )
     ]
     
-    return pd.DataFrame(data)
+    return DataFrame(data)

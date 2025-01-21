@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify, render_template
-import pandas as pd
+from pandas import DataFrame, read_csv
+import numpy as np
+from os import environ, path, join
 from model import ModelTrainer
+from data_gen import generate_synthetic_data
 import os
 app = Flask(__name__)
 
@@ -27,7 +30,7 @@ def upload_data():
         return jsonify({"error": "Please upload a CSV file"}), 400
         
     try:
-        data = pd.read_csv(file)
+        data = read_csv(file)
         features = list(data.columns)
         
         if target and target not in features:
@@ -85,19 +88,14 @@ def predict():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-from data_gen import generate_synthetic_data
 
 @app.route('/generate-data', methods=['POST'])
 def generate_data():
     try:
-        # Generate synthetic data
         df = generate_synthetic_data()
-        
-        # Save to CSV
         filename = 'synthetic_manufacturing_data.csv'
         df.to_csv(filename, index=False)
         
-        # Return the features and success message
         return jsonify({
             "message": "Synthetic data generated successfully",
             "features": list(df.columns),
@@ -106,16 +104,16 @@ def generate_data():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
 @app.route('/upload-generated', methods=['POST'])
 def upload_generated():
     global data, target
     try:
-        # Load the generated CSV file
-        filepath = os.path.join('synthetic_manufacturing_data.csv')
-        if not os.path.exists(filepath):
+        filepath = join('synthetic_manufacturing_data.csv')
+        if not path.exists(filepath):
             return jsonify({"error": "Generated data file not found"}), 400
             
-        data = pd.read_csv(filepath)
+        data = read_csv(filepath)
         target = request.json.get('target', 'Downtime_Flag')
         
         if target not in data.columns:
@@ -131,5 +129,6 @@ def upload_generated():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(environ.get('PORT', 5000))
+    model_trainer = ModelTrainer()
     app.run(host='0.0.0.0', port=port)
