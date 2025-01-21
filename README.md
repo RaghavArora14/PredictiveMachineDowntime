@@ -1,3 +1,5 @@
+
+
 # Manufacturing Downtime Predictor
 
 **Manufacturing Predictor** is a web-based application designed to help manufacturers predict machine downtime and prevent potential failures using machine learning models. It uses historical and real-time data from machines to predict when a machine is likely to fail or require maintenance, which can help optimize factory operations, reduce unplanned downtime, and improve productivity.
@@ -54,46 +56,9 @@ pip install flask pandas numpy scikit-learn
 
 ---
 
-## Project Structure
+## API Endpoints for Testing
 
-The project is organized into several files and directories to separate concerns and maintain modularity.
-
-### 1. `app.py` - Main Application File
-- **Purpose**: This file contains the main Flask application logic, including the setup of routes, API endpoints, and overall handling of user requests.
-- **Key Responsibilities**:
-  - Setting up Flask routes (API endpoints).
-  - Handling file uploads, model training, and prediction requests.
-  - Integrating with the machine learning model and data management scripts.
-  - Providing a session-based system to store global state like the current model or uploaded data.
-
-### 2. `model.py` - Machine Learning Models
-- **Purpose**: This file contains the logic for training, testing, and evaluating machine learning models.
-- **Key Responsibilities**:
-  - **ModelTrainer Class**: Manages training of different machine learning models (Logistic Regression, Decision Trees, SVM).
-  - **Data Preprocessing**: Handles feature scaling, missing values, and transformations necessary before training.
-  - **Model Evaluation**: Computes performance metrics such as accuracy, precision, recall, and F1 score after each training session.
-  - **Prediction Generation**: Once trained, models are used to generate predictions on new input data, along with a confidence score.
-
-### 3. `data_gen.py` - Synthetic Data Generator
-- **Purpose**: This file generates synthetic manufacturing data that simulates the real-world data required to train and test models.
-- **Key Features**:
-  - **Customizable Parameters**: The user can define the number of samples, range of values for each feature, and the distribution of downtime.
-  - **Features**: Includes machine-specific features like `Machine_ID`, `Temperature`, `Run_Time`, `Torque`, `Tool_Wear`, and `Downtime_Flag` (the target variable).
-  - **Output**: Generates data and saves it as a CSV file, which can then be uploaded and used for model training.
-
-### 4. `templates/index.html` - Frontend Interface
-- **Purpose**: This file contains the HTML and JavaScript code for rendering the user interface.
-- **Key Features**:
-  - **Data Upload Section**: Allows users to upload their CSV files and choose the target variable for prediction.
-  - **Model Training Section**: Lets users choose a machine learning model (Logistic Regression, Decision Tree, SVM) and train it on the uploaded data.
-  - **Prediction Section**: Provides a form where users can input feature values and get a downtime prediction, along with a confidence score.
-  - **Real-Time Feedback**: Displays model performance metrics and updates the UI dynamically to show errors, success messages, and prediction results.
-
----
-
-## API Endpoints
-
-The application provides several API endpoints for interacting programmatically with the machine learning models. These endpoints allow for seamless integration with external systems, enabling the automated prediction of machine downtime or the training of models on fresh data.
+Below are the `curl` commands to test the three key endpoints of the application: Upload Data, Train Model, and Make Prediction.
 
 ### 1. Upload Data
 - **Endpoint**: `/upload`
@@ -101,6 +66,13 @@ The application provides several API endpoints for interacting programmatically 
 - **Input**: 
   - Form data with a CSV file containing the manufacturing data.
   - Target variable name (e.g., `Downtime_Flag`).
+
+#### Command to Upload Data:
+```bash
+curl -X POST -F "file=@file_path" -F "target=Downtime_Flag" http://127.0.0.1:5000/upload
+```
+Replace `file_path` with the path to your CSV file,
+
 - **Output**:
   ```json
   {
@@ -109,8 +81,6 @@ The application provides several API endpoints for interacting programmatically 
     "target": "target_variable"
   }
   ```
-
-This endpoint allows users to upload a CSV file containing manufacturing data. Once the data is uploaded, the application will parse it and extract the feature and target variables, which are then used to train the machine learning models.
 
 ### 2. Train Model
 - **Endpoint**: `/train`
@@ -121,6 +91,22 @@ This endpoint allows users to upload a CSV file containing manufacturing data. O
     "model_type": "lr" // or "dt" or "svm"
   }
   ```
+
+#### Command to Train Model (Logistic Regression):
+```bash
+curl -X POST -H "Content-Type: application/json" -d "{\"model_type\": \"lr\"}" http://127.0.0.1:5000/train
+```
+
+#### Command to Train Model (Decision Tree):
+```bash
+curl -X POST -H "Content-Type: application/json" -d "{\"model_type\": \"dt\"}" http://127.0.0.1:5000/train
+```
+
+#### Command to Train Model (Support Vector Machine):
+```bash
+curl -X POST -H "Content-Type: application/json" -d "{\"model_type\": \"svm\"}" http://127.0.0.1:5000/train
+```
+
 - **Output**:
   ```json
   {
@@ -133,13 +119,6 @@ This endpoint allows users to upload a CSV file containing manufacturing data. O
     }
   }
   ```
-
-This endpoint is used to train the model using the uploaded data. The user can choose between three types of models:
-- **Logistic Regression (lr)**
-- **Decision Tree (dt)**
-- **Support Vector Machine (svm)**
-
-After training, the system will return performance metrics such as accuracy, precision, recall, and F1 score.
 
 ### 3. Make Prediction
 - **Endpoint**: `/predict`
@@ -155,6 +134,12 @@ After training, the system will return performance metrics such as accuracy, pre
     }
   }
   ```
+
+#### Command to Make Prediction:
+```bash
+curl -X POST -H "Content-Type: application/json" -d "{\"features\": {\"Machine_ID\": 1, \"Temperature\": 85.0, \"Run_Time\": 350, \"Torque\": 45.5, \"Tool_Wear\": 150}}" http://127.0.0.1:5000/predict
+```
+
 - **Output**:
   ```json
   {
@@ -162,23 +147,6 @@ After training, the system will return performance metrics such as accuracy, pre
     "confidence": 0.89
   }
   ```
-
-Once a model is trained, users can make predictions on new data by providing the values of the features. The prediction will be the predicted downtime (e.g., "Yes" for likely failure), and the confidence score will show how certain the model is about the prediction.
-
-### 4. Generate Synthetic Data
-- **Endpoint**: `/generate-data`
-- **Method**: POST
-- **Input**: None
-- **Output**:
-  ```json
-  {
-    "message": "Synthetic data generated successfully",
-    "features": ["Machine_ID", "Temperature", "Run_Time", "Torque", "Tool_Wear", "Downtime_Flag"],
-    "filename": "synthetic_manufacturing_data.csv"
-  }
-  ```
-
-This endpoint allows you to generate synthetic data, simulating real-world manufacturing conditions. This is particularly useful when real data is unavailable or insufficient for training the models.
 
 ---
 
@@ -222,7 +190,7 @@ This endpoint allows you to generate synthetic data, simulating real-world manuf
 ---
 
 ## Performance Considerations
-The application is designed to run efficiently even with a large dataset. Data processing and model training are optimized to minimize memory usage and processing time. 
+The application is designed to run efficiently even with a large dataset. Data processing and model training are optimized to minimize memory usage and processing time.
 
 ---
 
@@ -233,7 +201,4 @@ To contribute to this project:
 3. **Commit** your changes with clear, descriptive messages.
 4. Push your changes to your fork.
 5. Submit a **Pull Request** for review.
-
----
-
 
