@@ -27,12 +27,6 @@ To run the Manufacturing Predictor app, ensure you have the following installed:
 - **Python 3.8 or higher**: Python is the programming language used for this project.
 - **pip (Python Package Installer)**: This is used to install the necessary dependencies.
 
-### Required Python Packages
-You can install the required dependencies by running the following command:
-
-```bash
-pip install flask pandas numpy scikit-learn
-```
 
 ### Setup Instructions
 1. **Clone the Repository**: Start by cloning the repository to your local machine using Git.
