@@ -1,122 +1,72 @@
-
-
 # Manufacturing Downtime Predictor
 
-**Manufacturing Predictor** is a web-based application designed to help manufacturers predict machine downtime and prevent potential failures using machine learning models. It uses historical and real-time data from machines to predict when a machine is likely to fail or require maintenance, which can help optimize factory operations, reduce unplanned downtime, and improve productivity.
+**Manufacturing Downtime Predictor** is a web-based application designed to predict machine downtime or production defects in a manufacturing environment. The application utilizes machine learning models trained on historical and real-time machine data to provide actionable insights, helping optimize production efficiency and reduce unplanned downtime.
 
-This application leverages powerful machine learning algorithms, such as Logistic Regression, Decision Trees, and Support Vector Machines, to train models that predict downtime based on various operational features such as temperature, run-time, torque, and tool wear.
+## Objective
+This project was developed to meet the following goals:
+
+1. Build a predictive analysis model for manufacturing data.
+2. Create RESTful API endpoints to enable uploading of data, model training, and prediction generation.
+3. Provide an interactive front-end for users to interact with the application.
 
 ## Features
+- **Data Upload**: Upload manufacturing data in CSV format.
+- **Model Training**: Train machine learning models (Logistic Regression, Decision Tree, or Support Vector Machine) using uploaded data.
+- **Downtime Prediction**: Predict machine downtime based on operational features and return predictions with confidence scores.
+- **Synthetic Data Generation**: Generate manufacturing data with key fields like `Machine_ID`, `Temperature`, `Run_Time`, and `Downtime_Flag`.
+- **RESTful API Endpoints**: Interact with the system programmatically to automate workflows.
+- **Performance Metrics**: Provide detailed metrics such as accuracy, precision, recall, and F1-score after model training.
+- **Download Synthetic Dataset**: Easily download generated synthetic datasets for testing and development purposes.
+- **Interactive Front-End**: A user-friendly front-end built using HTML, CSS, and JavaScript for seamless user interaction.
+- **Image Uploads for Documentation**: Users can upload images to visualize and document the application’s working interface.
 
-- **Interactive Web Interface**: A user-friendly web interface that allows easy interaction with the system, making it simple to upload data, train models, and make predictions.
-- **Multiple Machine Learning Models**: The application supports three popular machine learning algorithms, each with different strengths and use cases:
-  - Logistic Regression (LR)
-  - Decision Trees (DT)
-  - Support Vector Machine (SVM)
-- **Real-Time Model Training & Evaluation**: The app allows users to train models and immediately view their performance metrics, such as accuracy, precision, recall, and F1 score.
-- **Synthetic Data Generation**: Generate synthetic manufacturing data to simulate machine behavior, enabling testing of models and predictions when real data is unavailable or insufficient.
-- **RESTful API Endpoints**: Exposes a set of API endpoints for easy integration with external systems and for automated predictions.
-- **Model Performance Metrics**: After training, the application provides detailed performance metrics to help users understand how well their models are performing.
-- **Responsive Design**: The web interface adapts to various screen sizes, making it easy to use on desktops, tablets, and smartphones.
+## Key Technologies
+- **Backend Framework**: Python Flask
+- **Frontend Technologies**: HTML, CSS, JavaScript
+- **Machine Learning Library**: scikit-learn
+- **Data Handling**: pandas
 
-## Installation
+## API Endpoints
+The application exposes the following endpoints:
 
-### Prerequisites
-To run the Manufacturing Predictor app, ensure you have the following installed:
-
-- **Python 3.8 or higher**: Python is the programming language used for this project.
-- **pip (Python Package Installer)**: This is used to install the necessary dependencies.
-
-
-### Setup Instructions
-1. **Clone the Repository**: Start by cloning the repository to your local machine using Git.
-   ```bash
-   git clone https://github.com/your-username/manufacturing-predictor.git
-   cd manufacturing-predictor
-   ```
-
-2. **Install the Required Packages**: Use pip to install the dependencies listed in the `requirements.txt` file. This will ensure all the necessary libraries are available to run the application.
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the Application**: Start the Flask application by running:
-   ```bash
-   python app.py
-   ```
-   This will start the web server on `http://localhost:5000`.
-
-4. **Access the Web Interface**: Open a web browser and navigate to `http://localhost:5000` to interact with the application.
-
----
-
-## API Endpoints for Testing
-
-Below are the `curl` commands to test the three key endpoints of the application: Upload Data, Train Model, and Make Prediction.
-
-### 1. Upload Data
-- **Endpoint**: `/upload`
-- **Method**: POST
-- **Input**: 
-  - Form data with a CSV file containing the manufacturing data.
-  - Target variable name (e.g., `Downtime_Flag`).
-
-#### Command to Upload Data:
-```bash
-curl -X POST -F "file=@file_path" -F "target=Downtime_Flag" http://127.0.0.1:5000/upload
-```
-Replace `file_path` with the path to your CSV file,
-
+### 1. `/upload` (POST)
+Uploads a CSV file containing manufacturing data and selects the target variable for prediction.
+- **Input**:
+  - Form-data with:
+    - `file`: The CSV file containing data.
+    - `target`: The target column to predict (e.g., `Downtime_Flag`).
 - **Output**:
   ```json
   {
     "message": "Dataset uploaded successfully",
-    "features": ["feature1", "feature2", ...],
-    "target": "target_variable"
+    "features": ["Feature1", "Feature2", ...],
+    "target": "Target"
   }
   ```
 
-### 2. Train Model
-- **Endpoint**: `/train`
-- **Method**: POST
+### 2. `/train` (POST)
+Trains the machine learning model on the uploaded dataset.
 - **Input**:
   ```json
   {
-    "model_type": "lr" // or "dt" or "svm"
+    "model_type": "lr" // Options: "lr" (Logistic Regression), "dt" (Decision Tree), "svm" (Support Vector Machine)
   }
   ```
-
-#### Command to Train Model (Logistic Regression):
-```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"model_type\": \"lr\"}" http://127.0.0.1:5000/train
-```
-
-#### Command to Train Model (Decision Tree):
-```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"model_type\": \"dt\"}" http://127.0.0.1:5000/train
-```
-
-#### Command to Train Model (Support Vector Machine):
-```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"model_type\": \"svm\"}" http://127.0.0.1:5000/train
-```
-
 - **Output**:
   ```json
   {
     "message": "Model trained successfully",
     "metrics": {
-      "accuracy": 0.95,
-      "precision": 0.94,
-      "recall": 0.93,
-      "f1_score": 0.93
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0
     }
   }
   ```
 
-### 3. Make Prediction
-- **Endpoint**: `/predict`
-- **Method**: POST
+### 3. `/predict` (POST)
+Accepts feature inputs and returns a prediction along with confidence.
 - **Input**:
   ```json
   {
@@ -128,12 +78,6 @@ curl -X POST -H "Content-Type: application/json" -d "{\"model_type\": \"svm\"}" 
     }
   }
   ```
-
-#### Command to Make Prediction:
-```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"features\": {\"Machine_ID\": 1, \"Temperature\": 85.0, \"Run_Time\": 350, \"Torque\": 45.5, \"Tool_Wear\": 150}}" http://127.0.0.1:5000/predict
-```
-
 - **Output**:
   ```json
   {
@@ -142,57 +86,122 @@ curl -X POST -H "Content-Type: application/json" -d "{\"features\": {\"Machine_I
   }
   ```
 
----
+### 4. `/generate-data` (POST)
+Generates synthetic manufacturing data for testing.
+- **Output**: CSV file for download.
 
-## Usage Guide
+### Example Requests and Outputs
+#### Upload Data
+```bash
+curl -X POST -F "file=@data.csv" -F "target=Downtime_Flag" http://127.0.0.1:5000/upload
+```
+**Expected Output:**
+```json
+{
+  "message": "Dataset uploaded successfully",
+  "features": ["Temperature", "Run_Time", "Torque", "Tool_Wear"],
+  "target": "Downtime_Flag"
+}
+```
 
-### 1. Data Upload
-- Navigate to the "Upload Data" section.
-- Upload a CSV file containing the data for your manufacturing machines. This file should include features such as `Temperature`, `Run_Time`, `Torque`, `Tool_Wear`, and a target variable like `Downtime_Flag` (indicating whether or not the machine experienced downtime).
-- After uploading, select the target variable (such as `Downtime_Flag`) to indicate what the model will predict.
+#### Train Model
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"model_type": "dt"}' http://127.0.0.1:5000/train
+```
+**Expected Output:**
+```json
+{
+  "message": "Model trained successfully",
+  "metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0
+  }
+}
+```
 
-### 2. Model Training
-- After uploading your data, go to the "Train Model" tab.
-- Choose the machine learning model you want to use (Logistic Regression, Decision Tree, or Support Vector Machine).
-- Click "Train Model," and the system will start training the selected model on the uploaded data.
-- Once training is complete, the application will display performance metrics (accuracy, precision, recall, and F1 score) to help evaluate how well the model is performing.
+#### Make Prediction
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"features": {"Temperature": 95.0, "Run_Time": 450, "Torque": 65.5, "Tool_Wear": 180}}' http://127.0.0.1:5000/predict
+```
+**Expected Output:**
+```json
+{
+  "prediction": "Yes",
+  "confidence": 0.93
+}
+```
 
-### 3. Making Predictions
-- Go to the "Predict" section of the web interface.
-- Enter the values of the features (e.g., `Temperature`, `Run_Time`, `Torque`, `Tool_Wear`) that you want to make predictions for.
-- Click "Predict" to get the downtime prediction for your machine along with a confidence score indicating the model's certainty.
+#### Download Synthetic Data
+```bash
+curl -X POST http://127.0.0.1:5000/generate-data --output synthetic_data.csv
+```
+**Expected Output:**
+A CSV file named `synthetic_data.csv` will be downloaded containing simulated manufacturing data.
 
----
+## Explanation of API and RESTful Principles
+### What is a RESTful API?
+REST (Representational State Transfer) is a software architectural style for creating scalable web services. A RESTful API uses HTTP requests to perform CRUD (Create, Read, Update, Delete) operations on data.
 
-### Model Details
+Key principles of REST include:
+1. **Statelessness**: Each request from a client must contain all necessary information for the server to process it.
+2. **Resource Identification**: Resources are identified using URLs (e.g., `/upload`, `/train`).
+3. **Standard Methods**: REST uses standard HTTP methods like GET, POST, PUT, and DELETE.
+4. **Representation**: Data can be sent in formats like JSON, XML, or HTML.
 
-#### Logistic Regression
-- **Use Case**: Best for modeling linear relationships between features and the target variable.
-- **Strengths**: Efficient, fast, and easy to implement. Works well when features are independent and linearly related to the target variable.
-- **Limitations**: Struggles with non-linear relationships.
+### How This Application Uses Flask for RESTful APIs
+Flask is a lightweight web framework in Python that simplifies the creation of RESTful APIs. In this application:
+1. **Endpoints**: Flask routes (e.g., `@app.route('/upload', methods=['POST'])`) define specific API operations.
+2. **Request Handling**: The `request` object is used to handle input data (e.g., JSON, form-data).
+3. **Responses**: The `jsonify` function is used to return structured JSON responses to clients.
 
-#### Decision Tree
-- **Use Case**: Works well with non-linear relationships between features and the target variable.
-- **Strengths**: Handles non-linear relationships naturally, no feature scaling is required, easy to interpret.
-- **Limitations**: Tends to overfit without proper tuning (e.g., limiting the depth of the tree).
+For example, the `/train` endpoint:
+- Accepts JSON input specifying the model type.
+- Processes the data and trains the model using scikit-learn.
+- Returns performance metrics as a JSON response.
 
-#### Support Vector Machine (SVM)
-- **Use Case**: Effective for complex problems with high-dimensional feature spaces.
-- **Strengths**: Performs well for complex, non-linear classification tasks.
-- **Limitations**: Requires more computation and memory, and sensitive to feature scaling.
+## Usage Workflow
+1. **Upload Data**: Navigate to the Upload tab, upload a dataset, and specify the target variable.
+2. **Train the Model**: Select a machine learning algorithm and initiate model training. View performance metrics upon completion.
+3. **Make Predictions**: Input feature values into the Predict tab to get a prediction for machine downtime.
+4. **Download Synthetic Dataset**: Use the "Generate Data" feature to create and download synthetic data.
+5. **Upload Images**: Upload images of the UI in action to document functionality.
+   
+## Dynamic Front-End Functionality
+The front-end of the application dynamically updates the input fields for predictions based on the uploaded dataset and selected target variable. Using JavaScript:
+- **Input Generation**: When a dataset is uploaded, the front-end retrieves the feature names via the `/upload` API.
+- **Dynamic Forms**: HTML elements for each feature are generated dynamically, ensuring the user can input values for all required fields.
+- **Target Selection**: The target variable is highlighted and removed from the input fields to avoid confusion.
+- **Real-Time Updates**: The interface adapts automatically when new data is uploaded or the target is changed.
 
----
+This dynamic functionality ensures a seamless user experience and reduces the potential for errors during prediction input.
+## UI Screenshots
+![image](https://github.com/user-attachments/assets/4aae5110-e956-4e03-966a-78058925d439)
+![image](https://github.com/user-attachments/assets/73edbf1f-c4c0-48a5-a5f3-a379afdfbb36)
+![image](https://github.com/user-attachments/assets/f9eb0d09-b618-408f-b018-a15d65305663)
 
-## Performance Considerations
-The application is designed to run efficiently even with a large dataset. Data processing and model training are optimized to minimize memory usage and processing time.
+## Explanation of Model Choices
+The application supports three machine learning models, each chosen for its suitability to manufacturing data:
 
----
+### Logistic Regression (LR)
+- **Rationale**: Logistic Regression is effective for linearly separable data and provides probabilistic predictions. It is used here for simplicity and interpretability.
+- **Performance**: Achieved 95.50% accuracy on synthetic data, making it a strong baseline for linearly dependent datasets.
 
-## Contributing
-To contribute to this project:
-1. **Fork** the repository on GitHub.
-2. Create a **feature branch** for your changes.
-3. **Commit** your changes with clear, descriptive messages.
-4. Push your changes to your fork.
-5. Submit a **Pull Request** for review.
+### Decision Tree (DT)
+- **Rationale**: Decision Trees naturally handle non-linear relationships and interactions between features. For this dataset, which shows non-linear dependency on temperature and run-time, the Decision Tree achieved high accuracy.
+- **Performance**: Achieved perfect metrics (100% for accuracy, precision, recall, and F1 score) on the synthetic dataset.
+
+### Support Vector Machine (SVM)
+- **Rationale**: SVM is suited for high-dimensional and complex decision boundaries. By using a non-linear kernel, it effectively separates challenging datasets.
+- **Performance**: Achieved 97.75% accuracy, with precision of 92.31%, recall of 60.00%, and F1-score of 72.73% on the synthetic dataset.
+
+### Train-Test Split
+The data is split into 80% for training and 20% for testing to evaluate model performance effectively. This ensures a reliable estimate of how the model will perform on unseen data.
+
+## Contributors
+- [Raghav Arora](https://github.com/RaghavArora14)
+
+## License
+This project is licensed under the Apache License 2.0.
 
