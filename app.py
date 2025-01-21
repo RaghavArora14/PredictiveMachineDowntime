@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_file
 import pandas as pd
 from model import ModelTrainer
 import os
+
 app = Flask(__name__)
 
 # Global variables
@@ -86,50 +87,22 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 from data_gen import generate_synthetic_data
-
 @app.route('/generate-data', methods=['POST'])
 def generate_data():
     try:
         # Generate synthetic data
         df = generate_synthetic_data()
         
-        # Save to CSV
+        # Save to CSV file
         filename = 'synthetic_manufacturing_data.csv'
-        df.to_csv(filename, index=False)
+        filepath = os.path.join('static', filename)
+        df.to_csv(filepath, index=False)
         
-        # Return the features and success message
-        return jsonify({
-            "message": "Synthetic data generated successfully",
-            "features": list(df.columns),
-            "filename": filename
-        }), 200
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-@app.route('/upload-generated', methods=['POST'])
-def upload_generated():
-    global data, target
-    try:
-        # Load the generated CSV file
-        filepath = os.path.join('synthetic_manufacturing_data.csv')
-        if not os.path.exists(filepath):
-            return jsonify({"error": "Generated data file not found"}), 400
-            
-        data = pd.read_csv(filepath)
-        target = request.json.get('target', 'Downtime_Flag')
-        
-        if target not in data.columns:
-            return jsonify({"error": "Target variable not found in dataset"}), 400
-            
-        return jsonify({
-            "message": "Generated data loaded successfully",
-            "features": list(data.columns),
-            "target": target
-        }), 200
+        # Return the file path for downloading
+        return send_file(filepath, as_attachment=True, download_name=filename), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
