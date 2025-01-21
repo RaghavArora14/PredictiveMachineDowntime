@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manufacturing Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            background: #fff;
+            border: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 4px;
+        }
+
+        .tab.active {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input[type="file"],
+        input[type="text"],
+        input[type="number"],
+        select,
+        button {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #34495e;
+        }
+
+        .metrics {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .error {
+            color: #dc3545;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #dc3545;
+            border-radius: 4px;
+            background: #f8d7da;
+        }
+
+        .success {
+            color: #28a745;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #28a745;
+            border-radius: 4px;
+            background: #d4edda;
+        }
+        .secondary-button {
+    background: #3498db;
+    margin-top: 1rem;
+}
+
+.secondary-button:hover {
+    background: #2980b9;
+}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Manufacturing Predictor</h1>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('upload')">Upload Data</button>
+            <button class="tab" onclick="showTab('train')">Train Model</button>
+            <button class="tab" onclick="showTab('predict')">Predict</button>
+        </div>
+
+        <div id="upload" class="tab-content active">
+            <h2>Upload Dataset</h2>
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="file">Select CSV File:</label>
+                    <input type="file" id="file" accept=".csv" required>
+                </div>
+                <div class="form-group" id="target-select" style="display: none;">
+                    <label for="target">Select Target Variable:</label>
+                    <select id="target" required></select>
+                </div>
+                <button type="submit">Upload</button>
+            </form>
+            <div class="form-group">
+                <button type="button" id="generate-data-btn" class="secondary-button">Generate Sample Data</button>
+            </div>
+            <div id="upload-message"></div>
+        </div>
+
+        <div id="train" class="tab-content">
+            <h2>Train Model</h2>
+            <form id="train-form">
+                <div class="form-group">
+                    <label for="model-type">Select Model:</label>
+                    <select id="model-type" required>
+                        <option value="lr">Logistic Regression</option>
+                        <option value="dt">Decision Tree</option>
+                        <option value="svm">Support Vector Machine</option>
+                    </select>
+                </div>
+                <button type="submit">Train Model</button>
+            </form>
+            <div id="train-message"></div>
+            <div id="metrics" class="metrics"></div>
+        </div>
+
+        <div id="predict" class="tab-content">
+            <h2>Make Prediction</h2>
+            <form id="predict-form">
+                <div id="feature-inputs"></div>
+                <button type="submit">Predict</button>
+            </form>
+            <div id="predict-message"></div>
+        </div>
+    </div>
+
+    <script>
+        let features = [];
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+        }
+
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const file = document.getElementById('file').files[0];
+            const target = document.getElementById('target').value;
+            
+            formData.append('file', file);
+            formData.append('target', target);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    features = data.features.filter(f => f !== target);
+                    document.getElementById('upload-message').innerHTML = 
+                        `<div class="success">${data.message}</div>`;
+                    createFeatureInputs(features);
+                } else {
+                    document.getElementById('upload-message').innerHTML = 
+                        `<div class="error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('upload-message').innerHTML = 
+                    `<div class="error">Error uploading file</div>`;
+            }
+        });
+
+        document.getElementById('file').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        const targetSelect = document.getElementById('target');
+                        targetSelect.innerHTML = '';
+                        data.features.forEach(feature => {
+                            const option = document.createElement('option');
+                            option.value = feature;
+                            option.textContent = feature;
+                            targetSelect.appendChild(option);
+                        });
+                        document.getElementById('target-select').style.display = 'block';
+                    }
+                } catch (error) {
+                    document.getElementById('upload-message').innerHTML = 
+                        `<div class="error">Error reading file</div>`;
+                }
+            }
+        });
+
+        document.getElementById('train-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const modelType = document.getElementById('model-type').value;
+            
+            try {
+                const response = await fetch('/train', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ model_type: modelType })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('train-message').innerHTML = 
+                        `<div class="success">${data.message}</div>`;
+                    
+                    // Display metrics
+                    const metricsHtml = `
+                        <h3>Model Performance Metrics</h3>
+                        <p>Accuracy: ${(data.metrics.accuracy * 100).toFixed(2)}%</p>
+                        <p>Precision: ${(data.metrics.precision * 100).toFixed(2)}%</p>
+                        <p>Recall: ${(data.metrics.recall * 100).toFixed(2)}%</p>
+                        <p>F1 Score: ${(data.metrics.f1_score * 100).toFixed(2)}%</p>
+                    `;
+                    document.getElementById('metrics').innerHTML = metricsHtml;
+                } else {
+                    document.getElementById('train-message').innerHTML = 
+                        `<div class="error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('train-message').innerHTML = 
+                    `<div class="error">Error training model</div>`;
+            }
+        });
+
+        function createFeatureInputs(features) {
+            const container = document.getElementById('feature-inputs');
+            container.innerHTML = '';
+            
+            features.forEach(feature => {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.htmlFor = feature;
+                label.textContent = feature;
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = feature;
+                input.name = feature;
+                input.required = true;
+                input.step = 'any';
+                
+                div.appendChild(label);
+                div.appendChild(input);
+                container.appendChild(div);
+            });
+        }
+
+        document.getElementById('predict-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const featureInputs = {};
+            features.forEach(feature => {
+                featureInputs[feature] = parseFloat(document.getElementById(feature).value);
+            });
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ features: featureInputs })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const resultHtml = `
+                        <div class="success">
+                            <h3>Prediction Result</h3>
+                            <p>Downtime Prediction: ${data.prediction}</p>
+                            <p>Confidence: ${(data.confidence * 100).toFixed(2)}%</p>
+                        </div>
+                    `;
+                    document.getElementById('predict-message').innerHTML = resultHtml;
+                } else {
+                    document.getElementById('predict-message').innerHTML = 
+                        `<div class="error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('predict-message').innerHTML = 
+                    `<div class="error">Error making prediction</div>`;
+            }
+        });
+        document.getElementById('generate-data-btn').addEventListener('click', async () => {
+    try {
+        // First generate the data
+        const response = await fetch('/generate-data', {
+            method: 'POST'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Now automatically upload the generated data
+            const uploadResponse = await fetch('/upload-generated', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    target: 'Downtime_Flag'  // Default target variable
+                })
+            });
+            
+            const uploadData = await uploadResponse.json();
+            
+            if (uploadResponse.ok) {
+                // Update target select with generated features
+                const targetSelect = document.getElementById('target');
+                targetSelect.innerHTML = '';
+                uploadData.features.forEach(feature => {
+                    const option = document.createElement('option');
+                    option.value = feature;
+                    option.textContent = feature;
+                    targetSelect.appendChild(option);
+                });
+                
+                // Show target select
+                document.getElementById('target-select').style.display = 'block';
+                
+                // Show success message
+                document.getElementById('upload-message').innerHTML = 
+                    `<div class="success">Data generated and loaded successfully!</div>`;
+                    
+                // Store features for later use
+                features = uploadData.features;
+                
+                // Create feature inputs for prediction
+                createFeatureInputs(features.filter(f => f !== 'Downtime_Flag'));
+                
+                // Set default target to Downtime_Flag
+                targetSelect.value = 'Downtime_Flag';
+            } else {
+                throw new Error(uploadData.error);
+            }
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        document.getElementById('upload-message').innerHTML = 
+            `<div class="error">${error.message || 'Error generating and loading synthetic data'}</div>`;
+    }
+});
+    </script>
+</body>
+</html>
